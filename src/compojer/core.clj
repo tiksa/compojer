@@ -2,8 +2,11 @@
     
 (def notes [])
 
-(def available-pitches (range 8))
-(def available-durations (range 6))
+(def pitch-symbols ['c1 'd1 'e1 'f1 'g1 'a1 'h1 'c2 'd2 'e2 'f2 'g2 'a2 'h2])
+(def duration-symbols ['1/8 '1/4 '1/2])
+
+(def available-pitches (range (count pitch-symbols)))
+(def available-durations (range (count duration-symbols)))
 
 (defn create-flat-distribution [length] (repeat length (/ 1 length)))
 
@@ -47,20 +50,26 @@
     
 (defn gen-note-attr [weighed-distr]
     (let [random (rand)]
-	(dec (count (filter #(< random %) (cumulate weighed-distr))))))    
+	(dec (count (filter #(< random %) (cumulate weighed-distr))))))   
 
 (defn gen-note [last-note]
-    [(gen-note-attr (weigh-distribution pitch-probs (first last-note))
-     (gen-note-attr (weigh-distribution duration-probs (second last-note))])
+    [(gen-note-attr (weigh-distribution pitch-probs (first last-note)))
+     (gen-note-attr (weigh-distribution duration-probs (second last-note)))])
 
 (defn add-notes [notes n]
     (if (zero? n) 
         notes 
         (add-notes (conj notes (gen-note
             (if (empty? notes)
-                [3 3]
+                [8 2]
 				(last notes)))) (dec n))))
+                
+(defn nums-to-symbols [notes]
+    (if (zero? (count notes))
+        notes
+        (cons [(nth pitch-symbols (first (first notes))) (nth duration-symbols (second (first notes)))]
+            (nums-to-symbols (rest notes)))))
     
 (defn -main [& args]
         (println "Compojer v0.1")
-        (println (add-notes notes 10)))
+        (println (nums-to-symbols (add-notes notes 10))))
