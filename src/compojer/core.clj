@@ -45,27 +45,21 @@
 (defn cumulate [distribution]
     (cumulate-recur distribution []))
     
-(defn gen-pitch [last-pitch]
-    (let [random (rand)
-	  weighed-distr (weigh-distribution pitch-probs last-pitch)]
-	(dec (count (filter #(< random %) (cumulate weighed-distr))))))
-    
-(defn gen-duration [last-duration]
-    (let [random (rand)
-	  weighed-distr (weigh-distribution duration-probs last-duration)]
-	(dec (count (filter #(< random %) (cumulate weighed-distr))))))
-
+(defn gen-note-attr [weighed-distr]
+    (let [random (rand)]
+	(dec (count (filter #(< random %) (cumulate weighed-distr))))))    
 
 (defn gen-note [last-note]
-    [(gen-pitch (first last-note)) (gen-duration (second last-note))])
+    [(gen-note-attr (weigh-distribution pitch-probs (first last-note))
+     (gen-note-attr (weigh-distribution duration-probs (second last-note))])
 
 (defn add-notes [notes n]
     (if (zero? n) 
         notes 
         (add-notes (conj notes (gen-note
-				   (if (empty? notes)
-				       [3 3]
-				       (last notes)))) (dec n))))
+            (if (empty? notes)
+                [3 3]
+				(last notes)))) (dec n))))
     
 (defn -main [& args]
         (println "Compojer v0.1")
