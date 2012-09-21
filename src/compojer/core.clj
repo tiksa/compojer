@@ -8,6 +8,7 @@
 (defn create-flat-distribution [length] (repeat length (/ 1 length)))
 
 (def pitch-probs (create-flat-distribution (count available-pitches)))
+(def duration-probs (create-flat-distribution (count available-durations)))
 
 (defn prob-blocks [distr-length index] 
     (assert (not (or (neg? index) (>= index distr-length)))) 
@@ -27,15 +28,44 @@
 
 (defn weigh-distribution [distribution index] 
     (let [blocks (prob-blocks (count distribution) index)
-        block-count (reduce + blocks)]
+	  block-count (reduce + blocks)]
     (map #(/ % block-count) blocks)))
+
+(defn cumulate-recur [distribution current]
+    (if (zero? (count distribution))
+	current
+	(if (zero? (count current))
+	    (cumulate-recur
+		(rest distribution)
+		(conj current (first distribution)))
+	    (cumulate-recur
+		(rest distribution)
+		(conj current (+ (first distribution) (last current)))))))
+
+(defn cumulate [distribution]
+    (cumulate-recur distribution []))
     
-(def gen-note [(gen-pitch) (gen-duration)])
+(defn gen-pitch [last-pitch]
+    (let [random (rand)
+	  weighed-distr (weigh-distribution pitch-probs last-pitch)]
+	(dec (count (filter #(< random %) (cumulate weighed-distr))))))
+    
+(defn gen-duration [last-duration]
+    (let [random (rand)
+	  weighed-distr (weigh-distribution duration-probs last-duration)]
+	(dec (count (filter #(< random %) (cumulate weighed-distr))))))
+
+
+(defn gen-note [last-note]
+    [(gen-pitch (first last-note)) (gen-duration (second last-note))])
 
 (defn add-notes [notes n]
     (if (zero? n) 
         notes 
-        (add-notes (conj notes gen-note) (dec n))))
+        (add-notes (conj notes (gen-note
+				   (if (empty? notes)
+				       [3 3]
+				       (last notes)))) (dec n))))
     
 (defn -main [& args]
         (println "Compojer v0.1")
