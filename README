@@ -1,5 +1,5 @@
 Running:
-java -jar compojer-0.1-standalone.jar
+java -jar compojer-0.x-standalone.jar
 
 Compiling:
 lein uberjar (apt-get install lein if needed)
