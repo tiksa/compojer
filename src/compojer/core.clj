@@ -8,6 +8,7 @@
 (def duration-symbols ['1/8 '1/4 '1/2])
 
 (def midi-pitch-map {'c1 70 'd1 72 'e1 74 'f1 75 'g1 77 'a1 79 'hb1 80 'c2 82 'd2 84 'e2 86})
+(def midi-duration-map {'1/8 32 '1/4 64 '1/2 127})
 
 (def available-pitches (range (count pitch-symbols)))
 (def available-durations (range (count duration-symbols)))
@@ -42,10 +43,10 @@
     (if (zero? (count distribution))
 	current
 	(if (zero? (count current))
-	    (recur
+        (recur
             (rest distribution)
             (conj current (first distribution)))
-	    (recur
+        (recur
             (rest distribution)
             (conj current (+ (first distribution) (last current)))))))
 
@@ -87,12 +88,20 @@
 
 (defn pitch-to-midi-pitch [pitch-symbol]
     (get midi-pitch-map pitch-symbol))
+    
+(defn duration-to-midi-duration [duration-symbol]
+    (get midi-duration-map duration-symbol))
 
 (defn get-pitch [note] (first note))
 
+(defn get-duration [note] (second note))
+
 (defn create-msg [note]
     (let [msg (ShortMessage.)]
-        (.setMessage msg ShortMessage/NOTE_ON (pitch-to-midi-pitch (get-pitch note)) 64)
+        (.setMessage msg 
+            ShortMessage/NOTE_ON 
+            (pitch-to-midi-pitch (get-pitch note))
+            (duration-to-midi-duration (get-duration note)))
         msg))
 
 (defn notes-to-sounds-recur [notes sounds]
