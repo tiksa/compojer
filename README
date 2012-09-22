@@ -1,3 +1,7 @@
+Compojer is a skeletal but working random piece composing
+program that asks for the length of its composition and
+then plays it as MIDI.
+
 Running:
 java -jar compojer-0.x-standalone.jar
 

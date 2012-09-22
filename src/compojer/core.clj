@@ -42,10 +42,10 @@
     (if (zero? (count distribution))
 	current
 	(if (zero? (count current))
-	    (cumulate-recur
+	    (recur
             (rest distribution)
             (conj current (first distribution)))
-	    (cumulate-recur
+	    (recur
             (rest distribution)
             (conj current (+ (first distribution) (last current)))))))
 
